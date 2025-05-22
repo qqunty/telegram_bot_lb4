@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:telegrambot;MODE=MySQL;DB_CLOSE_DELAY=-1
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+    username: ${TELEGRAM_BOT_USERNAME}
