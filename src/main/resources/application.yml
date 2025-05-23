@@ -4,15 +4,15 @@ telegram:
     username: ${TELEGRAM_BOT_USERNAME}
 
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update        # чтобы таблицы создавались сами
-    open-in-view: false
   datasource:
     url: jdbc:h2:mem:telegrambot
-    driverClassName: org.h2.Driver
+    driver-class-name: org.h2.Driver
     username: sa
     password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
 logging:
   level:
     com.qqunty.telegrambot: INFO

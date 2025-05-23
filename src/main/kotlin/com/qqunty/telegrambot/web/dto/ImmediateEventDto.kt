@@ -1,12 +1,10 @@
-package com.qqunty.telegrambot.web.dto
+package com.qqunty.telegrambot.dto
 
 import com.qqunty.telegrambot.domain.EventType
-import com.qqunty.telegrambot.domain.Group
-import com.qqunty.telegrambot.domain.User
 
 data class ImmediateEventDto(
-    val type: EventType,
+    val eventType: EventType,
     val payload: Map<String, Any>,
-    val targetGroups: List<Group> = emptyList(),
-    val targetUsers: List<User> = emptyList()
+    val targetChatIds: List<String> = emptyList(),
+    val targetGroupChatIds: List<String> = emptyList()
 )

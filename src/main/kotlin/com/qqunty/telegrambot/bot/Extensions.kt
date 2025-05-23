@@ -1,13 +1,9 @@
 package com.qqunty.telegrambot.bot
 
-import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.Chat
+import java.io.Serializable
 
-/**
- * Удобная обёртка: bot.sendText(chatId, "текст")
- */
-fun TelegramLongPollingBot.sendText(chatId: String, text: String) {
-    val msg = SendMessage(chatId, text)
-    // можно настроить parseMode и т.д. при желании
-    execute(msg)
-}
+/** Удобная обертка: bot.sendText(chatId, "text") */
+fun NotificationBot.sendText(chatId: Serializable, text: String) =
+    execute(SendMessage(chatId.toString(), text))
