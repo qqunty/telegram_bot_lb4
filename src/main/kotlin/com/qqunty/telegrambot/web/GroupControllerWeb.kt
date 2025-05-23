@@ -3,17 +3,17 @@ package com.qqunty.telegrambot.web
 import com.qqunty.telegrambot.domain.Group
 import com.qqunty.telegrambot.repository.GroupRepository
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
-@RequestMapping("/api/web/groups")
+@RequestMapping("/api/groups")
 class GroupControllerWeb(
-    private val groupRepo: GroupRepository
+    private val repo: GroupRepository
 ) {
-    @GetMapping fun list() = groupRepo.findAll()
+    @GetMapping fun list(): List<Group> = repo.findAll()
     @PostMapping fun create(@RequestBody dto: CreateGroupDto): Group {
-        val g = com.qqunty.telegrambot.domain.Group(name=dto.name, description=dto.description)
-        return groupRepo.save(g)
+        val g = Group(name = dto.name, description = dto.description)
+        return repo.save(g)
     }
 }
-
 data class CreateGroupDto(val name: String, val description: String?)

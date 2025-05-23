@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface TemplateRepository : JpaRepository<Template, UUID> {
-    fun findFirstByEventType(eventType: EventType): Template?
+    fun findByEventType(type: EventType): Template?
 }

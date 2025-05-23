@@ -1,7 +1,7 @@
 telegram:
   bot:
-    token: ${TELEGRAM_BOT_TOKEN}
-    username: ${TELEGRAM_BOT_USERNAME}
+    token:   ${TELEGRAM_BOT_TOKEN}
+    username:${TELEGRAM_BOT_USERNAME}
 
 spring:
   datasource:
@@ -12,7 +12,4 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    open-in-view: false
-logging:
-  level:
-    com.qqunty.telegrambot: INFO
+    show-sql: true

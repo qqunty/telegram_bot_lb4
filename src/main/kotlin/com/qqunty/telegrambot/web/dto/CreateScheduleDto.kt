@@ -3,7 +3,6 @@ package com.qqunty.telegrambot.web.dto
 import java.time.Instant
 import java.util.*
 
-/** JSON‑запрос на создание отложенной рассылки */
 data class CreateScheduleDto(
     val templateId: UUID,
     val eventTime: Instant,

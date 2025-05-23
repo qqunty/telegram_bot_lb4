@@ -1,19 +1,40 @@
 package com.qqunty.telegrambot.config
 
+import org.quartz.spi.TriggerFiredBundle
+import org.springframework.beans.factory.AutowireCapableBeanFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
+import org.springframework.scheduling.quartz.SpringBeanJobFactory
+import org.springframework.scheduling.quartz.SchedulerFactoryBean
 
+/**
+ * Настройка Quartz-планировщика: внедрение Spring-бинов в Quartz-Job.
+ */
 @Configuration
-class SchedulerConfig {
+class SchedulerConfig(
+    private val beanFactory: AutowireCapableBeanFactory
+) {
+
+    /** JobFactory, которая даёт Quartz возможность пользоваться DI Spring */
+    private class AutowiringJobFactory(
+        private val factory: AutowireCapableBeanFactory
+    ) : SpringBeanJobFactory() {
+
+        override fun setBeanFactory(factory: AutowireCapableBeanFactory) {
+            super.setBeanFactory(factory)      // обязательно — переданный параметр
+        }
+
+        override fun createJobInstance(bundle: TriggerFiredBundle): Any =
+            super.createJobInstance(bundle).also { factory.autowireBean(it) }
+    }
 
     @Bean
-    fun taskScheduler() = ThreadPoolTaskScheduler().apply {
-        poolSize = 4
-        setThreadNamePrefix("scheduler-")
-        initialize()
-    }
-}
+    fun jobFactory(): SpringBeanJobFactory = AutowiringJobFactory(beanFactory)
 
-@Bean
-fun objectMapper(): ObjectMapper = ObjectMapper().findAndRegisterModules()
+    @Bean
+    fun schedulerFactory(jobFactory: SpringBeanJobFactory): SchedulerFactoryBean =
+        SchedulerFactoryBean().apply {
+            setJobFactory(jobFactory)
+            isOverwriteExistingJobs = true
+        }
+}

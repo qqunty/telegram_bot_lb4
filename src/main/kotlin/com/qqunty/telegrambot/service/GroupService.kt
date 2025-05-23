@@ -15,7 +15,6 @@ class GroupService(
         repo.findById(id).orElseThrow { NoSuchElementException("Group $id not found") }
 
     fun create(name: String, description: String?): Group {
-        // проверим уникальность
         if (repo.findAll().any { it.name == name })
             throw IllegalArgumentException("Group '$name' already exists")
         return repo.save(Group(name = name, description = description))

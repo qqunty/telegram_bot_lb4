@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class TelegramBotLb4Application
 
 fun main(args: Array<String>) {
-	runApplication<TelegramBotLb4Application>(*args)
+    runApplication<TelegramBotLb4Application>(*args)
 }
