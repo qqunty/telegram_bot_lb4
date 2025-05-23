@@ -1,15 +1,10 @@
 telegram:
   bot:
-    token:   ${TELEGRAM_BOT_TOKEN}
-    username:${TELEGRAM_BOT_USERNAME}
+    token: ${TELEGRAM_BOT_TOKEN:7965265400:AAHUgw--kRWmzawqEUyYK8jxGLYHXEuZCv8}
+    username: ${TELEGRAM_BOT_USERNAME:MyTestBot}
+
 
 spring:
-  datasource:
-    url: jdbc:h2:mem:telegrambot
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  quartz:
+    job-store-type: memory     
+

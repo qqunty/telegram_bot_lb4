@@ -14,7 +14,7 @@ build/
 .springBeans
 .sts4-cache
 
-
+application.yml
 ### IntelliJ IDEA ###
 .idea
 *.iws

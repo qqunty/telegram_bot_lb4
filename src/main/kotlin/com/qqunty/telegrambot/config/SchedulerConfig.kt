@@ -1,40 +1,29 @@
 package com.qqunty.telegrambot.config
 
-import org.quartz.spi.TriggerFiredBundle
-import org.springframework.beans.factory.AutowireCapableBeanFactory
+import org.quartz.spi.JobFactory
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.quartz.SpringBeanJobFactory
 import org.springframework.scheduling.quartz.SchedulerFactoryBean
+import org.springframework.scheduling.quartz.SpringBeanJobFactory
 
-/**
- * Настройка Quartz-планировщика: внедрение Spring-бинов в Quartz-Job.
- */
 @Configuration
-class SchedulerConfig(
-    private val beanFactory: AutowireCapableBeanFactory
-) {
+class SchedulerConfig {
 
-    /** JobFactory, которая даёт Quartz возможность пользоваться DI Spring */
-    private class AutowiringJobFactory(
-        private val factory: AutowireCapableBeanFactory
-    ) : SpringBeanJobFactory() {
-
-        override fun setBeanFactory(factory: AutowireCapableBeanFactory) {
-            super.setBeanFactory(factory)      // обязательно — переданный параметр
+    /** JobFactory, который позволяет @Autowired внутри Quartz-Job’ов */
+    @Bean
+    fun jobFactory(ctx: ApplicationContext): JobFactory =
+        object : SpringBeanJobFactory() {
+            init { setApplicationContext(ctx) }
         }
 
-        override fun createJobInstance(bundle: TriggerFiredBundle): Any =
-            super.createJobInstance(bundle).also { factory.autowireBean(it) }
-    }
-
+    /** Планировщик (RAMJobStore по умолчанию). */
     @Bean
-    fun jobFactory(): SpringBeanJobFactory = AutowiringJobFactory(beanFactory)
-
-    @Bean
-    fun schedulerFactory(jobFactory: SpringBeanJobFactory): SchedulerFactoryBean =
+    fun schedulerFactoryBean(jobFactory: JobFactory): SchedulerFactoryBean =
         SchedulerFactoryBean().apply {
             setJobFactory(jobFactory)
-            isOverwriteExistingJobs = true
+            setOverwriteExistingJobs(true)
+            setSchedulerName("telegramBotScheduler")   // ← вызов метода
+            // setDataSource(dataSource)  // если решите перейти на JDBC-Store
         }
 }
