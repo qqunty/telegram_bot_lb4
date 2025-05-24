@@ -1,4 +1,3 @@
-// src/main/kotlin/com/qqunty/telegrambot/web/GroupController.kt
 package com.qqunty.telegrambot.web
 
 import com.qqunty.telegrambot.repository.GroupRepository
@@ -9,12 +8,15 @@ import com.qqunty.telegrambot.web.dto.GroupDto
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
+import com.qqunty.telegrambot.util.toDto
+import com.qqunty.telegrambot.util.toEntity
+
 
 @RestController
 @RequestMapping("/api/groups")
 class GroupController(
     private val groupRepo: GroupRepository,
-    private val userRepo:  UserRepository
+    private val userRepo: UserRepository
 ) {
 
     @GetMapping
@@ -23,25 +25,19 @@ class GroupController(
 
     @GetMapping("/{id}")
     fun one(@PathVariable id: UUID): GroupDto =
-        groupRepo.findById(id)
-            .orElseThrow { IllegalArgumentException("Группа $id не найдена") }
-            .toDto()
+        groupRepo.findById(id).orElseThrow().toDto()
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody dto: GroupDto): GroupDto {
-        val entity = dto.toEntity()
-        return groupRepo.save(entity).toDto()
-    }
+    fun create(@RequestBody dto: GroupDto): GroupDto =
+        groupRepo.save(dto.toEntity()).toDto()
 
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
         @RequestBody dto: GroupDto
-    ): GroupDto {
-        val entity = dto.copy(id = id).toEntity()
-        return groupRepo.save(entity).toDto()
-    }
+    ): GroupDto =
+        groupRepo.save(dto.copy(id = id).toEntity()).toDto()
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -49,22 +45,16 @@ class GroupController(
         groupRepo.deleteById(id)
 
     /**
-     * Добавляет пользователя в группу.
+     * Назначить пользователя в группу
      */
     @PutMapping("/{groupId}/users/{userId}")
-    fun addUserToGroup(
+    fun addUser(
         @PathVariable groupId: UUID,
         @PathVariable userId: UUID
     ): GroupDto {
-        val group = groupRepo.findById(groupId)
-            .orElseThrow { IllegalArgumentException("Группа $groupId не найдена") }
-        val user = userRepo.findById(userId)
-            .orElseThrow { IllegalArgumentException("Пользователь $userId не найден") }
-
-        user.roles.add(group)
-        userRepo.save(user)
-
-        // возвращаем обновлённый объект группы
-        return groupRepo.findById(groupId).get().toDto()
+        val group = groupRepo.findById(groupId).orElseThrow()
+        val user = userRepo.findById(userId).orElseThrow()
+        group.users.add(user)
+        return groupRepo.save(group).toDto()
     }
 }
