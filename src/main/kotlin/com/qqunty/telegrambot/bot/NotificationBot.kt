@@ -1,3 +1,4 @@
+// src/main/kotlin/com/qqunty/telegrambot/bot/NotificationBot.kt
 package com.qqunty.telegrambot.bot
 
 import com.qqunty.telegrambot.domain.User
@@ -51,6 +52,7 @@ class NotificationBot(
                     if (group == null) {
                         send(chatId, "Группа '$groupName' не найдена.")
                     } else {
+                        // найдём или создадим пользователя по chatId
                         val user = userRepo.findByChatId(chatId)
                             ?: User(chatId = chatId).also { userRepo.save(it) }
 
@@ -75,7 +77,7 @@ class NotificationBot(
         }
     }
 
-    private fun send(chatId: String, text: String) {
+    fun send(chatId: String, text: String) {
         execute(SendMessage(chatId, text))
     }
 }

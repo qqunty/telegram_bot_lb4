@@ -1,66 +1,28 @@
 package com.qqunty.telegrambot.service
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.qqunty.telegrambot.domain.Channel
-import com.qqunty.telegrambot.domain.ScheduledNotification
-import com.qqunty.telegrambot.ext.chatIdList
-import com.qqunty.telegrambot.repository.*
-import com.qqunty.telegrambot.web.dto.ImmediateEventDto
-import com.qqunty.telegrambot.web.dto.ScheduleDto
-import org.quartz.Scheduler
+import com.qqunty.telegrambot.bot.NotificationBot
+import com.qqunty.telegrambot.domain.Template
+import com.qqunty.telegrambot.domain.TemplateChannel
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import java.time.ZoneId
-import java.util.UUID
 
 @Service
 class NotificationService(
-    private val templateRepo: TemplateRepository,
-    private val snRepo: ScheduledNotificationRepository,
-    private val userRepo: UserRepository,
-    private val groupRepo: GroupRepository,
-    private val scheduler: Scheduler,
-    private val jobBuilder: NotificationJobBuilder,
-    private val messageSender: MessageSender
+    private val bot: NotificationBot
 ) {
 
-    private val mapper = jacksonObjectMapper()
-    
-    @Transactional(readOnly = true)
-    fun listAll(): List<ScheduledNotification> = snRepo.findAll()
+    /**
+     * Мгновенная рассылка:
+     * @param template – шаблон
+     * @param chatIds – список chatId (строки)
+     * @param data – мапа плейсхолдеров: "link", "place", "time"
+     */
+    fun sendImmediate(template: Template, chatIds: List<String>, data: Map<String, String>) {
+        var text = template.text
+        text = text.replace("{{link}}", data["link"] ?: "")
+                   .replace("{{place}}", data["place"] ?: "")
+                   .replace("{{time}}", data["time"] ?: "")
 
-    @Transactional
-    fun notifyImmediate(dto: ImmediateEventDto) {
-        val template = templateRepo.findById(dto.templateId).orElseThrow()
-        val text = template.text.replacePlaceholders(dto.payload)
-
-        val chatIds: List<Long> = when (template.channel) {
-            Channel.GROUP   ->
-                groupRepo.findById(dto.groupId!!).get().chatIdList()
-
-            Channel.PRIVATE ->
-                listOf(dto.chatId!!.toLong())
-
-            Channel.BOTH    ->
-                groupRepo.findById(dto.groupId!!).get().chatIdList() +
-                listOf(dto.chatId!!.toLong())
-        }
-
-        chatIds.forEach { messageSender.send(it, text) }
+        // отсылаем всем
+        chatIds.forEach { bot.send(it, text) }
     }
-
-    @Transactional
-    fun schedule(dto: ScheduleDto): ScheduledNotification {
-        val template = templateRepo.findById(dto.templateId).orElseThrow()
-        val sn = ScheduledNotification.fromDto(dto, template)
-        snRepo.save(sn)    
-
-        val (job, trigger) = jobBuilder.build(sn)
-
-        scheduler.scheduleJob(job, trigger)
-        return sn
-    }
-
-    private fun String.replacePlaceholders(payload: Map<String, Any>): String =
-        payload.entries.fold(this) { acc, (k, v) -> acc.replace("{{${k}}}", v.toString()) }
 }

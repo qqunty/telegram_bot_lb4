@@ -6,7 +6,6 @@ import java.util.*
 @Entity
 @Table(name = "templates")
 class Template(
-
     @Id
     val id: UUID = UUID.randomUUID(),
 
@@ -14,10 +13,10 @@ class Template(
     val eventType: EventType,
 
     @Enumerated(EnumType.STRING)
-    val channel: Channel,
+    val channel: TemplateChannel,
 
     @Lob
     val text: String
 ) {
-    constructor() : this(UUID.randomUUID(), EventType.CALL, Channel.GROUP, "")
+    constructor() : this(UUID.randomUUID(), EventType.CALL, TemplateChannel.BOTH, "")
 }

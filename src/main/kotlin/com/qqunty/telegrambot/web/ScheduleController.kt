@@ -1,21 +1,36 @@
 package com.qqunty.telegrambot.web
 
 import com.qqunty.telegrambot.domain.ScheduledNotification
-import com.qqunty.telegrambot.service.NotificationService
-import com.qqunty.telegrambot.web.dto.ScheduleDto
-import org.springframework.http.ResponseEntity
+import com.qqunty.telegrambot.service.ScheduledNotificationService
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
+import java.util.*
+
+data class CreateScheduleRequest(
+    val templateId: UUID,
+    val eventTime: Long,
+    val repeatCount: Int,
+    val repeatIntervalMinutes: Int,
+    val targetGroupIds: List<UUID> = emptyList(),
+    val targetUserIds: List<UUID> = emptyList()
+)
 
 @RestController
 @RequestMapping("/api/schedules")
 class ScheduleController(
-    private val notificationService: NotificationService
+    private val scheduleService: ScheduledNotificationService
 ) {
+    @GetMapping
+    fun listAll(): List<ScheduledNotification> = scheduleService.findAll()
 
     @PostMapping
-    fun create(@RequestBody dto: ScheduleDto): ResponseEntity<ScheduledNotification> =
-        ResponseEntity.ok(notificationService.schedule(dto))
-
-    @GetMapping
-    fun list(): List<ScheduledNotification> = notificationService.listAll()
+    fun create(@RequestBody req: CreateScheduleRequest): ScheduledNotification =
+        scheduleService.create(
+            templateId = req.templateId,
+            eventTime = Instant.ofEpochMilli(req.eventTime),
+            repeatCount = req.repeatCount,
+            repeatIntervalMinutes = req.repeatIntervalMinutes,
+            targetGroupIds = req.targetGroupIds,
+            targetUserIds = req.targetUserIds
+        )
 }

@@ -6,11 +6,8 @@ import java.util.*
 @Entity
 @Table(name = "users")
 class User(
-
-    @Id
-    val id: UUID = UUID.randomUUID(),
-
-    val chatId: String? = null,
+    @Id val id: UUID = UUID.randomUUID(),
+    val chatId: String,
 
     @ManyToMany
     @JoinTable(
@@ -20,5 +17,5 @@ class User(
     )
     val roles: MutableSet<Group> = mutableSetOf()
 ) {
-    constructor() : this(UUID.randomUUID(), null, mutableSetOf())
+    constructor(chatId: String) : this(UUID.randomUUID(), chatId)
 }

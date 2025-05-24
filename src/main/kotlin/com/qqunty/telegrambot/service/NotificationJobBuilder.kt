@@ -1,53 +1,40 @@
-// src/main/kotlin/com/qqunty/telegrambot/service/NotificationJobBuilder.kt
 package com.qqunty.telegrambot.service
 
 import com.qqunty.telegrambot.domain.ScheduledNotification
-import org.quartz.JobBuilder
-import org.quartz.JobDataMap
-import org.quartz.JobDetail
-import org.quartz.SimpleScheduleBuilder
-import org.quartz.Trigger
-import org.quartz.TriggerBuilder
+import org.quartz.*
 import org.springframework.stereotype.Component
-import java.time.ZoneId
-import java.util.Date
+import java.util.*
 
 @Component
-object NotificationJobBuilder {
+class NotificationJobBuilder {
 
-    fun build(sn: ScheduledNotification): Pair<JobDetail, Trigger> {
-        val template = requireNotNull(sn.template) {
-            "ScheduledNotification.template не должен быть null"
-        }
-        val eventTime = requireNotNull(sn.eventTime) {
-            "ScheduledNotification.eventTime не должен быть null"
-        }
+    fun buildJob(notification: ScheduledNotification): JobDetail {
+        val jobData = JobDataMap().apply {
+            put("notificationId", notification.id.toString())
+            put("templateId", notification.templateId.toString())
 
-        val data = JobDataMap().apply {
-            put("text", template.text)
-            put("targetChatIds", sn.targetChatIds.toList())
+            val chatIds = notification.targetChatIds.mapNotNull { it.toLongOrNull() }
+            put("chatIds", chatIds.toLongArray())
         }
 
-        val job: JobDetail = JobBuilder.newJob(NotificationJob::class.java)
-            .withIdentity(sn.id.toString())
-            .usingJobData(data)
+        return JobBuilder.newJob(NotificationJob::class.java)
+            .withIdentity(JobKey.jobKey("job-${notification.id}"))
+            .usingJobData(jobData)
+            .storeDurably()
             .build()
+    }
 
-        val trigger: Trigger = TriggerBuilder.newTrigger()
-            .forJob(job)
-            .startAt(Date.from(eventTime.atZone(ZoneId.systemDefault()).toInstant()))
+    fun buildTrigger(notification: ScheduledNotification): Trigger {
+        val startAt = Date.from(notification.eventTime)
+        return TriggerBuilder.newTrigger()
+            .withIdentity(TriggerKey.triggerKey("trigger-${notification.id}"))
+            .startAt(startAt)
             .withSchedule(
-                if (sn.repeatIntervalMinutes > 0) {
-                    SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInMinutes(sn.repeatIntervalMinutes)
-                        .repeatForever()
-                } else {
-                    SimpleScheduleBuilder.simpleSchedule()
-                        .withRepeatCount(0)
-                }
+                SimpleScheduleBuilder.simpleSchedule()
+                    .withRepeatCount(notification.repeatCount)
+                    .withIntervalInMinutes(notification.repeatIntervalMinutes)
             )
+            .forJob("job-${notification.id}")
             .build()
-
-        return job to trigger
     }
 }
