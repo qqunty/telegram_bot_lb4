@@ -6,10 +6,15 @@ import java.util.*
 @Entity
 @Table(name = "users")
 class User(
-    @Id val id: UUID = UUID.randomUUID(),
+
+    @Id
+    val id: UUID = UUID.randomUUID(),
+
+    @Column(unique = true, nullable = false)
     val chatId: String,
 
-    @ManyToMany
+    // ВАЖНО: fetch = EAGER, чтобы коллекция roles загружалась сразу вместе с пользователем
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_groups",
         joinColumns = [JoinColumn(name = "user_id")],
@@ -17,5 +22,6 @@ class User(
     )
     val roles: MutableSet<Group> = mutableSetOf()
 ) {
-    constructor(chatId: String) : this(UUID.randomUUID(), chatId)
+    // нужен конструктор без аргументов для JPA
+    constructor() : this(UUID.randomUUID(), "", mutableSetOf())
 }
