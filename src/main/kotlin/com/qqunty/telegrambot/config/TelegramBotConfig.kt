@@ -12,6 +12,6 @@ class TelegramBotConfig {
     @Bean
     fun telegramBotsApi(bot: NotificationBot): TelegramBotsApi =
         TelegramBotsApi(DefaultBotSession::class.java).apply {
-            registerBot(bot)          // <— ключевая строка
+            registerBot(bot)         
         }
 }

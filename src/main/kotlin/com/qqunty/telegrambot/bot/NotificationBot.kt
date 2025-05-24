@@ -1,4 +1,3 @@
-// src/main/kotlin/com/qqunty/telegrambot/bot/NotificationBot.kt
 package com.qqunty.telegrambot.bot
 
 import com.qqunty.telegrambot.domain.User
@@ -12,7 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-
+import com.qqunty.telegrambot.domain.Group
 @Component
 class NotificationBot(
     private val groupRepo: GroupRepository,
@@ -52,7 +51,6 @@ class NotificationBot(
                     if (group == null) {
                         send(chatId, "Группа '$groupName' не найдена.")
                     } else {
-                        // найдём или создадим пользователя по chatId
                         val user = userRepo.findByChatId(chatId)
                             ?: User(chatId = chatId).also { userRepo.save(it) }
 
@@ -62,6 +60,16 @@ class NotificationBot(
                     }
                 }
             }
+            "/create-group" -> {
+                if (parts.size < 3) {
+                    send(chatId, "Использование: /create-group <name> <description>")
+                } else {
+                    val (name, desc) = parts[1] to parts.drop(2).joinToString(" ")
+                    groupRepo.save(Group(name = name, description = desc))
+                    send(chatId, "Группа '$name' создана.")
+                }
+            }
+
             else -> {
             }
         }

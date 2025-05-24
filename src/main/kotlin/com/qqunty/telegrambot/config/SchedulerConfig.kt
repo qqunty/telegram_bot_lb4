@@ -12,14 +12,12 @@ import org.springframework.scheduling.quartz.SpringBeanJobFactory
 @Configuration
 class SchedulerConfig : ApplicationContextAware {
 
-    /** здесь будет храниться контекст, чтобы «вкалывать» бины в Quartz-джобы */
     private lateinit var ctx: ApplicationContext
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         ctx = applicationContext
     }
 
-    /** Job-factory, которая после создания джобы даёт Spring-у её «проавтовайрить» */
     @Bean
     fun jobFactory(): JobFactory =
         object : SpringBeanJobFactory() {
@@ -31,11 +29,10 @@ class SchedulerConfig : ApplicationContextAware {
             }
         }
 
-    /** Главный `SchedulerFactoryBean` */
     @Bean
     fun schedulerFactory(jobFactory: JobFactory): SchedulerFactoryBean =
         SchedulerFactoryBean().apply {
-            setSchedulerName("telegramBotScheduler")   // <-- именно метод, не поле
+            setSchedulerName("telegramBotScheduler")   
             setJobFactory(jobFactory)
             setOverwriteExistingJobs(true)
         }
