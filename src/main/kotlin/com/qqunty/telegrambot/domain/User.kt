@@ -10,10 +10,8 @@ class User(
     @Id
     val id: UUID = UUID.randomUUID(),
 
-    /** chatId в Telegram, может быть null */
     val chatId: String? = null,
 
-    /** Группы (роли) пользователя */
     @ManyToMany
     @JoinTable(
         name = "user_groups",
@@ -21,4 +19,6 @@ class User(
         inverseJoinColumns = [JoinColumn(name = "group_id")]
     )
     val roles: MutableSet<Group> = mutableSetOf()
-)
+) {
+    constructor() : this(UUID.randomUUID(), null, mutableSetOf())
+}

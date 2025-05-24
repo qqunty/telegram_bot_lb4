@@ -10,12 +10,13 @@ class Group(
     @Id
     val id: UUID = UUID.randomUUID(),
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     val name: String,
 
     val description: String? = null,
 
-    /** Обратная сторона Many-to-Many */
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "roles")
     val users: MutableSet<User> = mutableSetOf()
-)
+) {
+    constructor() : this(UUID.randomUUID(), "", null, mutableSetOf())
+}

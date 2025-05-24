@@ -1,3 +1,4 @@
+// src/main/kotlin/com/qqunty/telegrambot/service/NotificationJobBuilder.kt
 package com.qqunty.telegrambot.service
 
 import com.qqunty.telegrambot.domain.ScheduledNotification
@@ -14,33 +15,33 @@ import java.util.Date
 @Component
 object NotificationJobBuilder {
 
-    /**
-     * Строит пару (JobDetail, Trigger) для планировщика Quartz
-     */
     fun build(sn: ScheduledNotification): Pair<JobDetail, Trigger> {
-        // Передаём в данные джоба текст и список чатов
+        val template = requireNotNull(sn.template) {
+            "ScheduledNotification.template не должен быть null"
+        }
+        val eventTime = requireNotNull(sn.eventTime) {
+            "ScheduledNotification.eventTime не должен быть null"
+        }
+
         val data = JobDataMap().apply {
-            put("text", sn.template.text)
+            put("text", template.text)
             put("targetChatIds", sn.targetChatIds.toList())
         }
 
-        // Деталь джоба с уникальным идентификатором
         val job: JobDetail = JobBuilder.newJob(NotificationJob::class.java)
             .withIdentity(sn.id.toString())
             .usingJobData(data)
             .build()
 
-        // Триггер, стартующий в sn.eventTime и с повторами, если нужно
         val trigger: Trigger = TriggerBuilder.newTrigger()
             .forJob(job)
-            .startAt(Date.from(sn.eventTime.atZone(ZoneId.systemDefault()).toInstant()))
+            .startAt(Date.from(eventTime.atZone(ZoneId.systemDefault()).toInstant()))
             .withSchedule(
                 if (sn.repeatIntervalMinutes > 0) {
                     SimpleScheduleBuilder.simpleSchedule()
                         .withIntervalInMinutes(sn.repeatIntervalMinutes)
                         .repeatForever()
                 } else {
-                    // без повторов (одноразово)
                     SimpleScheduleBuilder.simpleSchedule()
                         .withRepeatCount(0)
                 }

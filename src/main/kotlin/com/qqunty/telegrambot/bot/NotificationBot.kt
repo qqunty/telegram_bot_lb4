@@ -1,44 +1,73 @@
+// src/main/kotlin/com/qqunty/telegrambot/bot/NotificationBot.kt
 package com.qqunty.telegrambot.bot
 
-import org.telegram.telegrambots.meta.bots.AbsSender
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod
-import org.slf4j.LoggerFactory
+import com.qqunty.telegrambot.domain.User
+import com.qqunty.telegrambot.repository.GroupRepository
+import com.qqunty.telegrambot.repository.UserRepository
+import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
-import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
-
+import org.telegram.telegrambots.bots.TelegramLongPollingBot
 
 @Component
 class NotificationBot(
-    @Value("\${telegram.bot.token}")    private val token: String,
-    @Value("\${telegram.bot.username}") private val username: String
+    private val groupRepo: GroupRepository,
+    private val userRepo: UserRepository,
+    @Value("\${telegram.bot.username}") private val botUsername: String,
+    @Value("\${telegram.bot.token}")    private val botToken: String
 ) : TelegramLongPollingBot() {
 
-    private val log = LoggerFactory.getLogger(javaClass)
+    override fun getBotUsername(): String = botUsername
+    override fun getBotToken(): String = botToken
 
-    override fun getBotToken(): String = token
-    override fun getBotUsername(): String = username
+    @PostConstruct
+    fun registerBot() {
+        TelegramBotsApi(DefaultBotSession::class.java).registerBot(this)
+    }
 
     override fun onUpdateReceived(update: Update) {
-        // обрабатываем только команду /start
-        val text = update.message?.text ?: return
-        if (text.startsWith("/start")) {
-            val chatId = update.message.chatId.toString()
-            execute(SendMessage(chatId, "Привет! Я готов рассылать уведомления."))
-            log.info("Ответили /start в чат $chatId")
+        if (!update.hasMessage() || !update.message.hasText()) return
+
+        val chatId = update.message.chatId.toString()
+        val text   = update.message.text.trim()
+        val parts  = text.split("\\s+".toRegex())
+
+        when (parts[0].lowercase()) {
+            "/start" -> send(chatId, "Привет! Я готов рассылать уведомления.")
+            "/list-groups" -> {
+                val names = groupRepo.findAll().map { it.name }
+                val reply = if (names.isEmpty()) "Нет доступных групп." else "Группы: ${names.joinToString(", ")}"
+                send(chatId, reply)
+            }
+            "/subscribe" -> {
+                if (parts.size < 2) {
+                    send(chatId, "Использование: /subscribe <имя_группы>")
+                } else {
+                    val groupName = parts[1]
+                    val group = groupRepo.findByName(groupName)
+                    if (group == null) {
+                        send(chatId, "Группа '$groupName' не найдена.")
+                    } else {
+                        // найдём или создадим пользователя по chatId
+                        val user = userRepo.findByChatId(chatId)
+                            ?: User(chatId = chatId).also { userRepo.save(it) }
+
+                        user.roles.add(group)
+                        userRepo.save(user)
+                        send(chatId, "Вы подписаны на группу '$groupName'.")
+                    }
+                }
+            }
+            else -> {
+            }
         }
     }
 
-    fun sendText(chatId: String, text: String) {
-        try {
-            execute(SendMessage(chatId, text))
-        } catch (ex: TelegramApiException) {
-            log.error("Failed to send message to $chatId", ex)
-        }
+    private fun send(chatId: String, text: String) {
+        execute(SendMessage(chatId, text))
     }
 }
