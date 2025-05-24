@@ -1,9 +1,14 @@
-FROM gradle:8.5-jdk17-alpine AS builder
-WORKDIR /workspace
-COPY . .
-RUN gradle bootJar --no-daemon
-
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:17-jdk-slim AS build
 WORKDIR /app
-COPY --from=builder /workspace/build/libs/*.jar app.jar
+COPY gradlew ./
+COPY gradle gradle
+COPY build.gradle.kts settings.gradle.kts ./
+COPY src src
+RUN ./gradlew clean bootJar --no-daemon
+
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
+
+ENV SPRING_PROFILES_ACTIVE=docker
 ENTRYPOINT ["java","-jar","/app/app.jar"]

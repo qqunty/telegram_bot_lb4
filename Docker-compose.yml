@@ -1,21 +1,23 @@
-version: "3.9"
 services:
   db:
-    image: mysql:8.0
+    image: postgres:15
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: telegrambot
-      MYSQL_USER: telegrambot
-      MYSQL_PASSWORD: password
-    ports:
-      - "3306:3306"
+      POSTGRES_USER: telegram
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: telegrambot
+    volumes:
+      - db_data:/var/lib/postgresql/data
 
-  app:
+  bot:
     build: .
-    environment:
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
-    ports:
-      - "8080:8080"
     depends_on:
       - db
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
+      TELEGRAM_BOT_TOKEN:    ${TELEGRAM_BOT_TOKEN}
+
+volumes:
+  db_data:

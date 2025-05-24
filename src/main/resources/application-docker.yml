@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/telegrambot
+    username: telegram
+    password: secret
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update       # или validate/create-drop, как вам нужно
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

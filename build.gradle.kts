@@ -29,14 +29,17 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-quartz")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    // ← use the real 6.x release that’s on Maven Central
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
+
+    implementation("org.postgresql:postgresql:42.5.4")
     val tgVersion = "6.9.7.1"
     implementation("org.telegram:telegrambots:$tgVersion")
     implementation("org.telegram:telegrambots-spring-boot-starter:$tgVersion")
 
     runtimeOnly("com.h2database:h2")
-
-    // for JAXB annotations (Hibernate / JSON)
+    
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
     runtimeOnly("org.glassfish.jaxb:jaxb-runtime:4.0.4")
 

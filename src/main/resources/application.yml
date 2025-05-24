@@ -6,7 +6,6 @@ telegram:
 
 spring:
   datasource:
-    # вот тут — файл ./data/telegrambot.mv.db в корне проекта
     url: jdbc:h2:file:./data/telegrambot
     driver-class-name: org.h2.Driver
     username: sa
