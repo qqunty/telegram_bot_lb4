@@ -1,4 +1,3 @@
-// src/main/kotlin/com/qqunty/telegrambot/repository/UserRepository.kt
 package com.qqunty.telegrambot.repository
 
 import com.qqunty.telegrambot.domain.User

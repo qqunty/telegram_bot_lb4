@@ -1,11 +1,9 @@
-// src/main/kotlin/com/qqunty/telegrambot/web/dto/UserDto.kt
 package com.qqunty.telegrambot.web.dto
 
-import java.util.*
+import java.util.UUID
 
 data class UserDto(
-    val id: UUID?,
+    val id: UUID?          = null,
     val chatId: String,
-    val firstName: String?,
-    val lastName: String?
+    val roleIds: Set<UUID> = emptySet()
 )

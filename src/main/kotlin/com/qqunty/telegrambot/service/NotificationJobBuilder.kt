@@ -1,38 +1,49 @@
 package com.qqunty.telegrambot.service
 
-import org.quartz.*
-import java.time.Instant
-import java.util.*
+import com.qqunty.telegrambot.domain.ScheduledNotification
+import org.quartz.JobBuilder
+import org.quartz.JobDataMap
+import org.quartz.JobDetail
+import org.quartz.SimpleScheduleBuilder
+import org.quartz.Trigger
+import org.quartz.TriggerBuilder
+import org.springframework.stereotype.Component
+import java.time.ZoneId
+import java.util.Date
 
+@Component
 object NotificationJobBuilder {
 
-    fun buildJob(
-        text: String,
-        chatIds: Collection<Long>,
-        fireAt: Instant,
-        repeatMinutes: Int
-    ): Pair<JobDetail, Trigger> {
-
+    /**
+     * Строит пару (JobDetail, Trigger) для планировщика Quartz
+     */
+    fun build(sn: ScheduledNotification): Pair<JobDetail, Trigger> {
+        // Передаём в данные джоба текст и список чатов
         val data = JobDataMap().apply {
-            put("text", text)
-            put("targetChatIds", chatIds.toList())
+            put("text", sn.template.text)
+            put("targetChatIds", sn.targetChatIds.toList())
         }
 
-        val job = JobBuilder.newJob(NotificationJob::class.java)
-            .withIdentity(UUID.randomUUID().toString())
+        // Деталь джоба с уникальным идентификатором
+        val job: JobDetail = JobBuilder.newJob(NotificationJob::class.java)
+            .withIdentity(sn.id.toString())
             .usingJobData(data)
             .build()
 
-        val trigger = TriggerBuilder.newTrigger()
+        // Триггер, стартующий в sn.eventTime и с повторами, если нужно
+        val trigger: Trigger = TriggerBuilder.newTrigger()
             .forJob(job)
-            .startAt(Date.from(fireAt))
+            .startAt(Date.from(sn.eventTime.atZone(ZoneId.systemDefault()).toInstant()))
             .withSchedule(
-                if (repeatMinutes > 0)
+                if (sn.repeatIntervalMinutes > 0) {
                     SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInMinutes(repeatMinutes)
+                        .withIntervalInMinutes(sn.repeatIntervalMinutes)
                         .repeatForever()
-                else
-                    SimpleScheduleBuilder.simpleSchedule().withRepeatCount(0)
+                } else {
+                    // без повторов (одноразово)
+                    SimpleScheduleBuilder.simpleSchedule()
+                        .withRepeatCount(0)
+                }
             )
             .build()
 

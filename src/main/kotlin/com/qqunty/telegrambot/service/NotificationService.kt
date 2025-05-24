@@ -55,12 +55,7 @@ class NotificationService(
         val sn = ScheduledNotification.fromDto(dto, template)
         snRepo.save(sn)    
 
-        val (job, trigger) = jobBuilder.buildJob(
-            text          = template.text,
-            chatIds       = sn.targetChatIds.mapNotNull { it.toLongOrNull() },
-            fireAt        = sn.eventTime.atZone(ZoneId.systemDefault()).toInstant(),
-            repeatMinutes = sn.repeatIntervalMinutes
-        )
+        val (job, trigger) = jobBuilder.build(sn)
 
         scheduler.scheduleJob(job, trigger)
         return sn

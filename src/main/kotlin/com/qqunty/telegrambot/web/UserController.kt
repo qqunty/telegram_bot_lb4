@@ -1,6 +1,9 @@
 // src/main/kotlin/com/qqunty/telegrambot/web/UserController.kt
 package com.qqunty.telegrambot.web
 
+
+import com.qqunty.telegrambot.util.toDto
+import com.qqunty.telegrambot.util.toEntity
 import com.qqunty.telegrambot.repository.UserRepository
 import com.qqunty.telegrambot.util.toDto
 import com.qqunty.telegrambot.util.toEntity

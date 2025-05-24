@@ -5,7 +5,8 @@ import java.util.*
 
 @Entity
 @Table(name = "groups")
-data class Group(
+class Group(
+
     @Id
     val id: UUID = UUID.randomUUID(),
 
@@ -14,6 +15,7 @@ data class Group(
 
     val description: String? = null,
 
-    @ManyToMany(mappedBy = "roles")
-    val users: Set<User> = emptySet()
+    /** Обратная сторона Many-to-Many */
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    val users: MutableSet<User> = mutableSetOf()
 )

@@ -2,6 +2,6 @@ package com.qqunty.telegrambot.ext
 
 import com.qqunty.telegrambot.domain.Group
 
-/** chatId всех участников группы, переведённые в Long */
+/** chatId всех участников группы в формате Long */
 fun Group.chatIdList(): List<Long> =
-    users.mapNotNull { it.chatId?.toLongOrNull() }
+    this.users.mapNotNull { it.chatId?.toLongOrNull() }

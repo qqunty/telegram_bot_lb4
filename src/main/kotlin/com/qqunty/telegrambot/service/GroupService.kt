@@ -9,19 +9,8 @@ import java.util.*
 class GroupService(
     private val repo: GroupRepository
 ) {
-    fun findAll(): List<Group> = repo.findAll()
-
-    fun findById(id: UUID): Group =
-        repo.findById(id).orElseThrow { NoSuchElementException("Group $id not found") }
-
-    fun create(name: String, description: String?): Group {
-        if (repo.findAll().any { it.name == name })
-            throw IllegalArgumentException("Group '$name' already exists")
-        return repo.save(Group(name = name, description = description))
-    }
-
-    fun delete(id: UUID) {
-        if (!repo.existsById(id)) throw NoSuchElementException("Group $id not found")
-        repo.deleteById(id)
-    }
+    fun listAll(): List<Group> = repo.findAll()
+    fun find(id: UUID): Group = repo.findById(id).orElseThrow()
+    fun save(group: Group): Group = repo.save(group)
+    fun delete(id: UUID) = repo.deleteById(id)
 }
