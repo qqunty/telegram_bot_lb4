@@ -13,7 +13,6 @@ class User(
     @Column(unique = true, nullable = false)
     val chatId: String,
 
-    // ВАЖНО: fetch = EAGER, чтобы коллекция roles загружалась сразу вместе с пользователем
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_groups",
@@ -22,6 +21,5 @@ class User(
     )
     val roles: MutableSet<Group> = mutableSetOf()
 ) {
-    // нужен конструктор без аргументов для JPA
     constructor() : this(UUID.randomUUID(), "", mutableSetOf())
 }

@@ -21,14 +21,13 @@ class WebhookController(
 ) {
     @PostMapping
     fun handle(@RequestBody payload: WebhookPayload): ResponseEntity<Void> {
-        // TODO: собрать реальные chatId из репозиториев
         val chatIds = listOf<String>()
         val data = mapOf(
             "link" to (payload.link ?: ""),
             "place" to (payload.place ?: ""),
             "time" to (payload.time ?: "")
         )
-        val tpl = Template( // временно
+        val tpl = Template( 
             eventType = payload.eventType,
             channel   = TemplateChannel.BOTH,
             text      = "{{link}}"

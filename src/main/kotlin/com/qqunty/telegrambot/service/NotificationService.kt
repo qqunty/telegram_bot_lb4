@@ -10,19 +10,12 @@ class NotificationService(
     private val bot: NotificationBot
 ) {
 
-    /**
-     * Мгновенная рассылка:
-     * @param template – шаблон
-     * @param chatIds – список chatId (строки)
-     * @param data – мапа плейсхолдеров: "link", "place", "time"
-     */
     fun sendImmediate(template: Template, chatIds: List<String>, data: Map<String, String>) {
         var text = template.text
         text = text.replace("{{link}}", data["link"] ?: "")
                    .replace("{{place}}", data["place"] ?: "")
                    .replace("{{time}}", data["time"] ?: "")
 
-        // отсылаем всем
         chatIds.forEach { bot.send(it, text) }
     }
 }

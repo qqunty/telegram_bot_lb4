@@ -4,7 +4,7 @@ import org.quartz.Job
 import org.quartz.JobExecutionContext
 import org.springframework.stereotype.Component
 
-@Component          // чтобы Spring увидел класс
+@Component       
 class NotificationJob(
     private val messageSender: MessageSender
 ) : Job {

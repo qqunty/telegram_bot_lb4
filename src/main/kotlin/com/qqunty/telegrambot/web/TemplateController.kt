@@ -38,5 +38,4 @@ class TemplateController(
         templateRepo.deleteById(id)
     }
 
-    // при необходимости можно добавить PUT /{id} для редактирования
 }

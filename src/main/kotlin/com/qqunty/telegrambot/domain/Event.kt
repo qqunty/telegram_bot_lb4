@@ -1,4 +1,3 @@
-// src/main/kotlin/com/qqunty/telegrambot/domain/Event.kt
 package com.qqunty.telegrambot.domain
 
 import jakarta.persistence.*

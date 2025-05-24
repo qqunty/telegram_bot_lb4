@@ -26,7 +26,7 @@ class ScheduledNotificationService(
             eventTime = eventTime,
             repeatCount = repeatCount,
             repeatIntervalMinutes = repeatIntervalMinutes,
-            targetChatIds = emptyList() // пока так, заполни позже логикой
+            targetChatIds = emptyList()
         )
         return repository.save(scheduledNotification)
     }
