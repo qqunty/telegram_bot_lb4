@@ -5,6 +5,7 @@ telegram:
 
 
 spring:
-  quartz:
-    job-store-type: memory     
+  jpa:
+    properties:
+      hibernate.type.json_format_mapper: jackson
 

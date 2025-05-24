@@ -1,29 +1,42 @@
 package com.qqunty.telegrambot.config
 
 import org.quartz.spi.JobFactory
+import org.quartz.spi.TriggerFiredBundle
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.quartz.SchedulerFactoryBean
 import org.springframework.scheduling.quartz.SpringBeanJobFactory
 
 @Configuration
-class SchedulerConfig {
+class SchedulerConfig : ApplicationContextAware {
 
-    /** JobFactory, который позволяет @Autowired внутри Quartz-Job’ов */
+    /** здесь будет храниться контекст, чтобы «вкалывать» бины в Quartz-джобы */
+    private lateinit var ctx: ApplicationContext
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        ctx = applicationContext
+    }
+
+    /** Job-factory, которая после создания джобы даёт Spring-у её «проавтовайрить» */
     @Bean
-    fun jobFactory(ctx: ApplicationContext): JobFactory =
+    fun jobFactory(): JobFactory =
         object : SpringBeanJobFactory() {
-            init { setApplicationContext(ctx) }
+
+            override fun createJobInstance(bundle: TriggerFiredBundle): Any {
+                val job = super.createJobInstance(bundle)
+                ctx.autowireCapableBeanFactory.autowireBean(job)
+                return job
+            }
         }
 
-    /** Планировщик (RAMJobStore по умолчанию). */
+    /** Главный `SchedulerFactoryBean` */
     @Bean
-    fun schedulerFactoryBean(jobFactory: JobFactory): SchedulerFactoryBean =
+    fun schedulerFactory(jobFactory: JobFactory): SchedulerFactoryBean =
         SchedulerFactoryBean().apply {
+            setSchedulerName("telegramBotScheduler")   // <-- именно метод, не поле
             setJobFactory(jobFactory)
             setOverwriteExistingJobs(true)
-            setSchedulerName("telegramBotScheduler")   // ← вызов метода
-            // setDataSource(dataSource)  // если решите перейти на JDBC-Store
         }
 }

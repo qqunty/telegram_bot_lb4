@@ -1,32 +1,41 @@
 package com.qqunty.telegrambot.service
 
-import com.qqunty.telegrambot.domain.ScheduledNotification
 import org.quartz.*
+import java.time.Instant
 import java.util.*
 
 object NotificationJobBuilder {
 
-    data class JobBundle(val jobDetail: JobDetail, val trigger: Trigger)
+    fun buildJob(
+        text: String,
+        chatIds: Collection<Long>,
+        fireAt: Instant,
+        repeatMinutes: Int
+    ): Pair<JobDetail, Trigger> {
 
-    fun build(sn: ScheduledNotification): JobBundle {
-        val data = JobDataMap().apply { put("scheduleId", sn.id.toString()) }
+        val data = JobDataMap().apply {
+            put("text", text)
+            put("targetChatIds", chatIds.toList())
+        }
 
         val job = JobBuilder.newJob(NotificationJob::class.java)
-            .withIdentity("notif-job-${sn.id}")
+            .withIdentity(UUID.randomUUID().toString())
             .usingJobData(data)
             .build()
 
         val trigger = TriggerBuilder.newTrigger()
-            .withIdentity("notif-trigger-${sn.id}")
-            .startAt(Date.from(sn.eventTime))
-            .withSchedule(
-                SimpleScheduleBuilder.simpleSchedule()
-                    .withIntervalInMinutes(sn.repeatIntervalMinutes)   // Int, без toLong()
-                    .withRepeatCount(sn.repeatCount)
-            )
             .forJob(job)
+            .startAt(Date.from(fireAt))
+            .withSchedule(
+                if (repeatMinutes > 0)
+                    SimpleScheduleBuilder.simpleSchedule()
+                        .withIntervalInMinutes(repeatMinutes)
+                        .repeatForever()
+                else
+                    SimpleScheduleBuilder.simpleSchedule().withRepeatCount(0)
+            )
             .build()
 
-        return JobBundle(job, trigger)
+        return job to trigger
     }
 }

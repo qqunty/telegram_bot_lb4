@@ -2,21 +2,18 @@ package com.qqunty.telegrambot.service
 
 import org.quartz.Job
 import org.quartz.JobExecutionContext
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.*
 
-/**
- * Quartz-задача, которая по расписанию дергает NotificationService.
- */
-@Component
-class NotificationJob : Job {
+@Component          // чтобы Spring увидел класс
+class NotificationJob(
+    private val messageSender: MessageSender
+) : Job {
 
-  @Autowired
-  private lateinit var notificationService: NotificationService
+    override fun execute(context: JobExecutionContext) {
+        val text  = context.mergedJobDataMap.getString("text")
+        val chats = context.mergedJobDataMap
+                       .get("targetChatIds") as List<Long>
 
-  override fun execute(ctx: JobExecutionContext) {
-    ctx.jobDetail.jobDataMap.getString("scheduleId")
-      ?.let { notificationService.sendScheduled(UUID.fromString(it)) }
-  }
+        chats.forEach { chatId -> messageSender.send(chatId, text) }
+    }
 }

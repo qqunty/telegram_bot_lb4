@@ -1,3 +1,9 @@
 package com.qqunty.telegrambot.web.dto
 
-data class GroupDto(val name: String, val description: String?)
+import java.util.UUID
+
+data class GroupDto(
+    val id: UUID? = null,
+    val name: String,
+    val description: String?
+)

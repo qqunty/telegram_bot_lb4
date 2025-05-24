@@ -1,41 +1,34 @@
 package com.qqunty.telegrambot.domain
 
+import jakarta.persistence.FetchType
+import java.time.LocalDateTime
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*
+import com.qqunty.telegrambot.web.dto.ScheduleDto
 
 @Entity
 @Table(name = "scheduled_notifications")
-data class ScheduledNotification(
-    @Id
-    val id: UUID = UUID.randomUUID(),
+class ScheduledNotification(
+    @Id val id: UUID = UUID.randomUUID(),
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id", nullable = false)
-    val template: Template,
+    @ManyToOne(fetch = FetchType.LAZY) val template: Template,
+    val eventTime: LocalDateTime,
+    val repeatIntervalMinutes: Int,
+    val repeatCount: Int,
 
-    @Column(nullable = false)
-    val eventTime: Instant,
+    /** Кому отправлять */
+    @ElementCollection val targetChatIds: Set<String> = emptySet()
+) {
 
-    @Column(nullable = false)
-    val repeatCount: Int = 0,
-
-    @Column(nullable = false)
-    val repeatIntervalMinutes: Int = 0,
-
-    @ManyToMany
-    @JoinTable(
-        name = "schedule_groups",
-        joinColumns = [JoinColumn(name = "schedule_id")],
-        inverseJoinColumns = [JoinColumn(name = "group_id")]
-    )
-    val targetGroups: Set<Group> = emptySet(),
-
-    @ManyToMany
-    @JoinTable(
-        name = "schedule_users",
-        joinColumns = [JoinColumn(name = "schedule_id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id")]
-    )
-    val targetUsers: Set<User> = emptySet()
-)
+    companion object {
+        fun fromDto(dto: ScheduleDto, template: Template): ScheduledNotification =
+            ScheduledNotification(
+                template = template,
+                eventTime = dto.eventTime,
+                repeatIntervalMinutes = dto.repeatIntervalMinutes,
+                repeatCount = dto.repeatCount,
+                targetChatIds = dto.targetUserChatIds
+            )
+    }
+}
