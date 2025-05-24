@@ -17,6 +17,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
 
+configurations.all {
+    exclude(group = "com.fasterxml.jackson.module", module = "jackson-module-jaxb-annotations")
+}
+
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
